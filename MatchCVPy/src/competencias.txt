@@ -1,10 +1,84 @@
 Python
 Java
-React.js
-Node.js
-Docker
-Git
-SQL
-MySQL
-PHP
 JavaScript
+PHP
+SQL
+Kotlin
+Swift
+Objective-C
+Groovy
+Bash
+
+# Frontend
+React.js
+HTML5
+CSS3
+jQuery
+React Native
+
+# Backend
+Node.js
+Express
+FastAPI
+Spring Framework
+Django
+
+# Bancos de Dados
+MySQL
+PostgreSQL
+MongoDB
+
+# DevOps & Infraestrutura
+Docker
+Kubernetes
+Terraform
+Ansible
+Jenkins
+GitLab CI
+CI/CD
+
+# Cloud
+AWS
+GCP
+Amazon Web Services
+Google Cloud Platform
+
+# Monitoramento & Logging
+Prometheus
+Grafana
+ELK Stack
+Elasticsearch
+Logstash
+Kibana
+SonarQube
+
+# Segurança
+Pentest
+SQL Injection
+XSS
+Nmap
+Metasploit
+Nessus
+Firewall
+IDS
+Snort
+Burp Suite
+OWASP
+Criptografia
+
+# Metodologias & Ferramentas de Gestão
+Scrum
+Kanban
+Agile
+Jira
+Confluence
+Product Owner
+
+# Ferramentas Gerais
+Git
+Swagger
+
+# Sistemas Operacionais
+Linux
+Kali Linux
+Windows Server
