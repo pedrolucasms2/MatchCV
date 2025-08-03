@@ -1,0 +1,13 @@
+prefix=/Users/pedrolucasmirandasouza/Documents/Projetos 2025/MatchCV/MatchCVPy/env
+exec_prefix=/Users/pedrolucasmirandasouza/Documents/Projetos 2025/MatchCV/MatchCVPy/env
+libdir=/Users/pedrolucasmirandasouza/Documents/Projetos 2025/MatchCV/MatchCVPy/env/lib
+sharedlibdir=/Users/pedrolucasmirandasouza/Documents/Projetos 2025/MatchCV/MatchCVPy/env/lib
+includedir=/Users/pedrolucasmirandasouza/Documents/Projetos 2025/MatchCV/MatchCVPy/env/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.2.13
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lz
+Cflags: -I${includedir}

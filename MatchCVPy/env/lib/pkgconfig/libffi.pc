@@ -1,0 +1,11 @@
+prefix=/Users/pedrolucasmirandasouza/Documents/Projetos 2025/MatchCV/MatchCVPy/env
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+toolexeclibdir=${libdir}
+includedir=/Users/pedrolucasmirandasouza/Documents/Projetos 2025/MatchCV/MatchCVPy/env/include
+
+Name: libffi
+Description: Library supporting Foreign Function Interfaces
+Version: 3.4.4
+Libs: -L${toolexeclibdir} -lffi
+Cflags: -I${includedir}
