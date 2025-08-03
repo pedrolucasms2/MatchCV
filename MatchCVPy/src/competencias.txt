@@ -1,0 +1,10 @@
+Python
+Java
+React.js
+Node.js
+Docker
+Git
+SQL
+MySQL
+PHP
+JavaScript

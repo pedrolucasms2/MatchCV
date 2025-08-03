@@ -1,80 +1,58 @@
 import json 
 from flask import Flask, request, jsonify
 import requests
+import spacy
+from spacy.matcher import PhraseMatcher
 
-app = Flask(__name__)
+nlp = spacy.load("pt_core_news_lg")
 
-# (Apenas a variável PROMPT_TEMPLATE muda. O resto do código continua igual.)
+with open("competencias.txt", "r", encoding="utf-8") as f:
+    termos_competencias = [line.strip() for line in f]
 
-PROMPT_TEMPLATE = """
-Você é um robô que analisa currículos. Sua única tarefa é extrair as tecnologias, ferramentas e metodologias (as competências técnicas) e avaliar o nível de proficiência.
-
-Para a chave "competencia", use APENAS o nome da tecnologia ou ferramenta (ex: "Python", "React.js", "Docker", "Scrum"). NÃO inclua verbos ou descrições da ação.
-
-Use SOMENTE uma das seguintes quatro palavras para o nível: 'Iniciante', 'Intermediário', 'Avançado', 'Especialista'.
-
-Retorne sua análise SOMENTE no seguinte formato JSON:
-{
-  "avaliacoes": [
-    {
-      "competencia": "Nome da Tecnologia",
-      "nivel_estimado": "Uma das quatro palavras da escala",
-      "justificativa": "Uma frase curta explicando a escolha do nível, baseada no projeto ou responsabilidade descrita no currículo."
-    }
-  ]
-}
-
-Agora, analise o seguinte texto do currículo:
-
-"""
-
-
-# (As importações e o PROMPT_TEMPLATE continuam os mesmos)
+matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
+patterns = [nlp.make_doc(text) for text in termos_competencias]
+matcher.add("COMPETENCIAS", patterns)
 
 @app.route('/analisar', methods=['POST'])
 def analisar_curriculo():
-    try:
-        texto_curriculo = request.data.decode('utf-8')
-        if not texto_curriculo:
-            return jsonify({"erro": "Nenhum texto de currículo foi fornecido."}), 400
+    texto_curriculo = request.data.decode('utf-8')
+    doc = nlp(texto_curriculo)
+    
+    matches = matcher(doc)
+    competencias_encontradas = set() 
+    for match_id, start, end in matches:
+        span = doc[start:end]
+        competencias_encontradas.add(span.text.lower())
+        
+    resultados_finais = {"avaliacoes": []}
+    
+    for competencia in sorted(list(competencias_encontradas)):
+        prompt_especifico = f"""
+        O texto a seguir é um currículo. Avalie o nível de proficiência do candidato na competência específica: "{competencia}".
+        Use APENAS uma das palavras: 'Iniciante', 'Intermediário', 'Avançado', 'Especialista'.
+        Se a competência não parecer ser usada profissionalmente, classifique como 'Iniciante'.
 
-        # --- NOVA FORMA DE MONTAR O PROMPT ---
-        # Simplesmente juntamos a constante do prompt com o texto do currículo.
-        # É à prova de erros de formatação.
-        prompt_final = PROMPT_TEMPLATE + texto_curriculo
-
-        # O resto do seu código pode continuar exatamente como na nossa última versão funcional.
+        Currículo:
+        ---
+        {texto_curriculo}
+        ---
+        Qual o nível para "{competencia}"? Retorne APENAS a palavra da classificação.
+        """
+        
         dados_para_ollama = {
             "model": "phi3:mini",
-            "format": "json",
             "stream": False,
-            "prompt": prompt_final
+            "prompt": prompt_especifico
         }
         
-        response_ollama = requests.post("http://localhost:11434/api/generate", json=dados_para_ollama)
-        response_ollama.raise_for_status()
-
-        resposta_completa_ollama = response_ollama.json()
-        string_json_da_resposta = resposta_completa_ollama['response']
-        resultado_final_objeto = json.loads(string_json_da_resposta)
+        response = requests.post("http://localhost:11434/api/generate", json=dados_para_ollama)
         
-        return jsonify(resultado_final_objeto)
+        if response.status_code == 200:
+            nivel = response.json()['response'].strip()
+            resultados_finais["avaliacoes"].append({
+                "competencia": competencia,
+                "nivel_estimado": nivel,
+                "justificativa": "Avaliado por IA com base no contexto do currículo." 
+            })
 
-    # (os blocos de 'except' continuam os mesmos)
-    except requests.exceptions.RequestException as e:
-        return jsonify({"erro": f"Não foi possível conectar ao serviço de IA (Ollama). Detalhes: {e}"}), 503
-    except KeyError:
-        print("KeyError: A resposta do Ollama não continha a chave 'response'. Resposta recebida:")
-        print(response_ollama.text)
-        return jsonify({"erro": "O serviço de IA retornou uma resposta em um formato inesperado."}), 500
-    except json.JSONDecodeError:
-        print("JSONDecodeError: O texto retornado pelo modelo não é um JSON válido. Texto recebido:")
-        print(string_json_da_resposta)
-        return jsonify({"erro": "O modelo de IA não gerou um JSON válido."}), 500
-    except Exception as e:
-        return jsonify({"erro": f"Ocorreu um erro inesperado no servidor de análise. Detalhes: {e}"}), 500
-      
-            
-if __name__ == '__main__':
-    # Usando a porta 5001
-    app.run(host='0.0.0.0', port=5001)
+    return jsonify(resultados_finais)
