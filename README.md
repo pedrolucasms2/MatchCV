@@ -20,7 +20,7 @@ MatchCV é uma aplicação de desktop segura e de código aberto projetada para 
 
 ### Sobre o Projeto
 
-Em um processo seletivo, analisar dezenas ou centenas de currículos manualmente é uma tarefa demorada e suscetível a vieses. O CV-Ranker resolve esse problema automatizando a triagem inicial.
+Em um processo seletivo, analisar dezenas ou centenas de currículos manualmente é uma tarefa demorada e suscetível a vieses. O MatchCV resolve esse problema automatizando a triagem inicial.
 
 A principal filosofia do projeto é a **privacidade em primeiro lugar**. Ao processar todos os dados localmente, eliminamos os riscos de segurança associados ao envio de informações de candidatos para serviços de terceiros na nuvem.
 
@@ -28,7 +28,7 @@ A principal filosofia do projeto é a **privacidade em primeiro lugar**. Ao proc
 
 ### Principais Funcionalidades
 
-*   **Análise Local com IA:** Utiliza modelos de linguagem (LLMs) que rodam 100% offline.
+*   **Análise Local com IA:** Utiliza modelos de linguagem (LLMs e NLP) que rodam 100% offline.
 *   **Extração Inteligente:** Identifica competências técnicas (hard skills) e comportamentais (soft skills).
 *   **Inferência de Proficiência:** Estima o nível de conhecimento (Iniciante, Intermediário, Avançado) para cada competência com base no contexto do currículo.
 *   **Ranking Ponderado:** Classifica os candidatos com base em critérios de importância definidos pelo recrutador para cada vaga.
