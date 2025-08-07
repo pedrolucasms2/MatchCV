@@ -1,8 +1,8 @@
 package org.example;
 
+import com.google.gson.Gson;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -10,10 +10,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 
 public class AnaliseService {
 
-    // URL do nosso backend Python
     private static final String API_URL = "http://localhost:5001/analisar";
 
     /**
@@ -34,37 +35,43 @@ public class AnaliseService {
     }
 
     /**
-     * Envia o texto extraído para o backend de IA e retorna a resposta JSON.
+     * Envia o texto e os requisitos para o backend de IA.
      *
      * @param textoDoCurriculo O texto a ser analisado.
+     * @param requisitos A lista de competências a procurar.
      * @return A resposta JSON do servidor como uma String.
-     * @throws IOException Se ocorrer um erro de rede.
-     * @throws InterruptedException Se a conexão for interrompida.
      */
-    public String analisarTextoComIA(String textoDoCurriculo) throws IOException, InterruptedException {
-        System.out.println("Enviando texto para o backend de IA...");
+    public String analisarTextoComIA(String textoDoCurriculo, List<String> requisitos) throws IOException, InterruptedException {
+        System.out.println("Enviando texto e " + requisitos.size() + " requisitos para o backend...");
 
-        // Cria um cliente HTTP moderno
+        Map<String, Object> dadosParaEnvio = Map.of(
+                "texto_curriculo", textoDoCurriculo,
+                "requisitos", requisitos
+        );
+
+        Gson gson = new Gson();
+        String corpoJson = gson.toJson(dadosParaEnvio);
+
+        System.out.println("--- ENVIANDO JSON PARA O BACKEND ---");
+        System.out.println(corpoJson);
+        System.out.println("------------------------------------");
+
         HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
-                .connectTimeout(Duration.ofMinutes(5)) // Aumenta o timeout para aguentar a análise
+                .connectTimeout(Duration.ofMinutes(5))
                 .build();
 
-        // Cria a requisição POST com o texto do currículo no corpo
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(API_URL))
-                .timeout(Duration.ofMinutes(5)) // Timeout para a requisição inteira
-                .header("Content-Type", "text/plain; charset=UTF-8")
-                .POST(HttpRequest.BodyPublishers.ofString(textoDoCurriculo))
+                .timeout(Duration.ofMinutes(5))
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .POST(HttpRequest.BodyPublishers.ofString(corpoJson))
                 .build();
 
-        // Envia a requisição e espera pela resposta
-        // HttpResponse.BodyHandlers.ofString() converte a resposta em uma String
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         System.out.println("Resposta recebida do backend. Status: " + response.statusCode());
 
-        // Retorna o corpo da resposta (o JSON)
         return response.body();
     }
 }
