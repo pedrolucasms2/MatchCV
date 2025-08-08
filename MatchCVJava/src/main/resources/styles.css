@@ -1,3 +1,4 @@
+/* Paleta de Cores (Tema Verde) */
 .root {
     -fx-font-family: "Segoe UI", "Roboto", sans-serif;
     -fx-background-color: #17372d;
@@ -73,6 +74,26 @@
     -fx-text-fill: white;
 }
 
+/* Regras para a barra de rolagem da TableView */
+.table-view .scroll-bar:vertical, .table-view .scroll-bar:horizontal {
+    -fx-background-color: #122b24; /* Fundo da barra */
+}
+.table-view .scroll-bar:vertical .track, .table-view .scroll-bar:horizontal .track {
+    -fx-background-color: #1a3f34;
+    -fx-background-radius: 2em;
+}
+.table-view .scroll-bar:vertical .thumb, .table-view .scroll-bar:horizontal .thumb {
+    -fx-background-color: #3c9474;
+    -fx-background-insets: 0.5;
+    -fx-background-radius: 2em;
+}
+.table-view .scroll-bar:vertical .thumb:hover, .table-view .scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: #51a689;
+}
+.table-view .corner {
+    -fx-background-color: #122b24;
+}
+
 .button {
     -fx-background-color: #3c9474;
     -fx-text-fill: white;
@@ -105,7 +126,11 @@
     -fx-background-color: #51a689;
 }
 
-.progress-bar .bar {
+.progress-bar > .track {
+    -fx-background-color: #1a3f34;
+}
+
+.progress-bar > .bar {
     -fx-background-color: #2b8169;
     -fx-padding: 4px;
     -fx-background-radius: 0;
@@ -142,9 +167,13 @@
 /* --- Estilos para a nova janela de detalhes --- */
 
 .scroll-pane-popup {
-    -fx-background-color: #17372d;
+    -fx-background-color: transparent;
     -fx-border-color: #2b8169;
     -fx-border-width: 1px;
+}
+
+.scroll-pane-popup .viewport {
+    -fx-background-color: #17372d;
 }
 
 .vbox-popup {
@@ -173,56 +202,4 @@
     -fx-border-radius: 3px;
     -fx-font-size: 13px;
     -fx-control-inner-background: #1a3f34;
-}
-
-.scroll-pane {
-    -fx-background-color: transparent; /* Garante que o fundo da área de rolagem seja transparente */
-}
-
-.scroll-pane .scroll-bar:vertical, .scroll-pane .scroll-bar:horizontal {
-    -fx-background-color: transparent;
-    -fx-background-insets: 0;
-}
-
-.scroll-pane .scroll-bar:vertical .track, .scroll-pane .scroll-bar:horizontal .track {
-    -fx-background-color: #1a3f34; /* Cor da trilha da barra de rolagem */
-    -fx-background-radius: 2em;
-}
-
-.scroll-pane .scroll-bar:vertical .thumb, .scroll-pane .scroll-bar:horizontal .thumb {
-    -fx-background-color: #3c9474; /* Cor da barra que o usuário move */
-    -fx-background-insets: 0.5;
-    -fx-background-radius: 2em;
-}
-
-.scroll-pane .scroll-bar:vertical .thumb:hover, .scroll-pane .scroll-bar:horizontal .thumb:hover {
-    -fx-background-color: #51a689; /* Cor da barra ao passar o mouse */
-}
-
-/* Oculta os botões de incremento/decremento (setas) para um visual mais limpo */
-.scroll-pane .scroll-bar:vertical .increment-button, .scroll-pane .scroll-bar:vertical .decrement-button,
-.scroll-pane .scroll-bar:horizontal .increment-button, .scroll-pane .scroll-bar:horizontal .decrement-button {
-    -fx-padding: 0;
-    -fx-background-color: transparent;
-}
-
-.scroll-pane-popup {
-    -fx-background-color: transparent; /* Torna o fundo do ScrollPane transparente */
-}
-
-.scroll-pane-popup .viewport {
-    -fx-background-color: #122b24; /* Ajuste para a cor de fundo do seu tema */
-}
-
-.vbox-popup {
-    -fx-background-color: #122b24; /* Garante que o VBox tenha a mesma cor */
-}
-
-/* Opcional: Adicione a borda e arredondamento para os itens de avaliação */
-.avaliacao-item {
-    -fx-background-color: #122b24; /* Cor de fundo para cada item */
-    -fx-background-radius: 8;
-    -fx-border-radius: 8;
-    -fx-border-color: #2b8169;
-    -fx-border-width: 1;
 }

@@ -116,7 +116,7 @@ public class MainApp extends Application {
         VBox content = new VBox(10);
         content.setPadding(new Insets(10));
 
-        TitledPane titledPane = new TitledPane("1. Definir Vaga e Selecionar Arquivos", content);
+        TitledPane titledPane = new TitledPane("Definir Requisitos e Selecionar Arquivos", content);
         titledPane.setCollapsible(false);
 
         VBox painelRequisitosDefinicao = new VBox(5);
@@ -164,12 +164,12 @@ public class MainApp extends Application {
         Label selecionarLabel = new Label("Adicionar Currículos à Fila:");
         selecionarLabel.getStyleClass().add("subtitulo-painel");
 
-        selecionarArquivosBtn = new Button("Selecionar Arquivos...");
+        selecionarArquivosBtn = new Button("Selecionar Arquivos");
         selecionarArquivosBtn.getStyleClass().add("btn-com-icone");
         selecionarArquivosBtn.setGraphic(criarIcone("/icons/file-icon.png"));
         selecionarArquivosBtn.setOnAction(e -> selecionarArquivos());
 
-        selecionarPastaBtn = new Button("Selecionar Pasta...");
+        selecionarPastaBtn = new Button("Selecionar Pasta");
         selecionarPastaBtn.getStyleClass().add("btn-com-icone");
         selecionarPastaBtn.setGraphic(criarIcone("/icons/folder-icon.png"));
         selecionarPastaBtn.setOnAction(e -> selecionarPasta());
@@ -182,7 +182,7 @@ public class MainApp extends Application {
 
         HBox botoesSelecao = new HBox(10, selecionarArquivosBtn, selecionarPastaBtn, limparFilaBtn);
 
-        analisarBtn = new Button("2. Analisar Currículos");
+        analisarBtn = new Button("Analisar Currículos");
         analisarBtn.setId("btn-analisar");
         analisarBtn.setDisable(true);
         analisarBtn.setOnAction(e -> iniciarAnalise());
@@ -229,7 +229,6 @@ public class MainApp extends Application {
 
         return new VBox(titledPane);
     }
-
 
     private HBox criarBarraDeStatus() {
         HBox statusBar = new HBox(10);
