@@ -4,9 +4,13 @@ import com.google.gson.annotations.SerializedName;
 
 public class Avaliacao {
 
-    @SerializedName(value = "competencia", alternate = "competência")
+    @SerializedName(value = "competencia", alternate = {"competência"})
     private String competencia;
+
+    @SerializedName("nivel_estimado")
     private String nivel_estimado;
+
+    @SerializedName("justificativa")
     private String justificativa;
 
     public Avaliacao() {

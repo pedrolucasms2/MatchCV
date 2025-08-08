@@ -265,8 +265,6 @@ public class MainApp extends Application {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
         popupStage.setTitle("Avaliação Completa: " + nomeArquivo);
-        popupStage.setMinWidth(600);
-        popupStage.setMinHeight(500);
 
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setFitToWidth(true);
@@ -427,7 +425,6 @@ public class MainApp extends Application {
             }
 
             Platform.runLater(() -> {
-                Collections.sort(dadosRanking);
                 progressoLabel.setText("Análise concluída! " + totalArquivos + " currículos processados.");
                 analisarBtn.setDisable(false);
                 limparFilaBtn.setDisable(false);
@@ -447,7 +444,8 @@ public class MainApp extends Application {
         Map<String, String> mapaRequisitos = dadosRequisitos.stream()
                 .collect(Collectors.toMap(
                         r -> r.getCompetencia().trim().toLowerCase(),
-                        Requisito::getImportancia
+                        Requisito::getImportancia,
+                        (existing, replacement) -> existing
                 ));
 
         if (avaliacoes == null || avaliacoes.isEmpty()) {

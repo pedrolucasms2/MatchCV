@@ -22,7 +22,7 @@ Você é um Robô Analisador de Currículos. Sua tarefa é analisar o currículo
 Com base no currículo completo, avalie cada competência da lista fornecida.
 Use SOMENTE uma das seguintes quatro palavras para o nível: 'Iniciante', 'Intermediário', 'Avançado', 'Especialista'.
 
-Retorne sua análise SOMENTE no seguinte formato JSON, incluindo TODAS e APENAS as competências da lista fornecida:
+Retorne sua análise SOMENTE no seguinte formato JSON, incluindo TODAS e APENAS as competências da lista fornecida. Garanta que a chave para a competência seja sempre "competencia" (sem acento).
 {{
   "avaliacoes": [
     {{

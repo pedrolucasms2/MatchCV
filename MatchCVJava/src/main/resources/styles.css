@@ -205,3 +205,24 @@
     -fx-padding: 0;
     -fx-background-color: transparent;
 }
+
+.scroll-pane-popup {
+    -fx-background-color: transparent; /* Torna o fundo do ScrollPane transparente */
+}
+
+.scroll-pane-popup .viewport {
+    -fx-background-color: #122b24; /* Ajuste para a cor de fundo do seu tema */
+}
+
+.vbox-popup {
+    -fx-background-color: #122b24; /* Garante que o VBox tenha a mesma cor */
+}
+
+/* Opcional: Adicione a borda e arredondamento para os itens de avaliação */
+.avaliacao-item {
+    -fx-background-color: #122b24; /* Cor de fundo para cada item */
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #2b8169;
+    -fx-border-width: 1;
+}
