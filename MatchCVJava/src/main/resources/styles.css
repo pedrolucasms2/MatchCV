@@ -1,21 +1,6 @@
 .root {
-    -fx-base: #17372d;
-    -fx-accent: #3c9474;
-    -fx-default-button: #3c9474;
-    -fx-focus-color: #3c9474;
-    -fx-faint-focus-color: #3c947422;
-
-    -fx-primary-text-color: #caddd9;
-    -fx-secondary-text-color: #2b8169;
-    -fx-background-color-dark: #122b24;
-    -fx-control-inner-background: #122b24;
-    -fx-control-inner-background-alt: #17372d;
-    -fx-border-color: #2b8169;
-    -fx-fundo-principal: #17372d;
-
-    -fx-background-color: -fx-fundo-principal;
-
     -fx-font-family: "Segoe UI", "Roboto", sans-serif;
+    -fx-background-color: #17372d; 
 }
 
 .label {
@@ -29,6 +14,12 @@
     -fx-fill: white;
 }
 
+.subtitulo-painel {
+    -fx-font-weight: bold;
+    -fx-text-fill: #caddd9;
+    -fx-font-size: 14px;
+}
+
 .titled-pane {
     -fx-text-fill: #caddd9;
 }
@@ -39,7 +30,7 @@
     -fx-background-radius: 5px 5px 0 0;
 }
 .titled-pane > .content {
-    -fx-background-color: -fx-fundo-principal;
+    -fx-background-color: #17372d;
     -fx-border-color: #2b8169;
     -fx-border-width: 1px;
     -fx-border-radius: 0 0 5px 5px;
@@ -60,6 +51,7 @@
     -fx-border-color: transparent transparent #2b8169 transparent;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
+    -fx-text-fill: #caddd9;
 }
 .table-view .table-cell {
     -fx-text-fill: #caddd9;
@@ -90,10 +82,27 @@
     -fx-cursor: hand;
 }
 .button:hover {
-    -fx-background-color: derive(#3c9474, 20%);
+    -fx-background-color: #51a689;
 }
 .button:disabled {
     -fx-opacity: 0.5;
+}
+
+.btn-com-icone {
+    -fx-content-display: left;
+    -fx-alignment: center-left;
+    -fx-spacing: 5;
+}
+
+#btn-analisar {
+    -fx-background-color: #3c9474;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+    -fx-padding: 10px 15px;
+}
+#btn-analisar:hover {
+    -fx-background-color: #51a689;
 }
 
 .progress-bar .bar {
@@ -117,4 +126,15 @@
 .combo-box .list-cell:hover, .combo-box .list-cell:selected {
     -fx-background-color: #3c9474;
     -fx-text-fill: white;
+}
+
+.status-bar {
+    -fx-background-color: #122b24;
+    -fx-border-color: #2b8169;
+    -fx-border-width: 1px 0 0 0;
+    -fx-padding: 5px 15px;
+}
+.status-label {
+    -fx-text-fill: #2b8169;
+    -fx-font-size: 13px;
 }

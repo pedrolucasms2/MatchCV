@@ -13,6 +13,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -32,11 +33,11 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
-
 public class MainApp extends Application {
-
     private Button analisarBtn;
     private Button limparFilaBtn;
+    private Button selecionarArquivosBtn;
+    private Button selecionarPastaBtn;
     private ProgressBar progressBar;
     private Label progressoLabel;
 
@@ -44,6 +45,7 @@ public class MainApp extends Application {
     private final ObservableList<Requisito> dadosRequisitos = FXCollections.observableArrayList();
     private TextField inputCompetencia;
     private ComboBox<String> comboImportancia;
+    private Button btnAddReq;
 
     private TableView<ResultadoCandidato> tabelaRanking;
     private final ObservableList<ResultadoCandidato> dadosRanking = FXCollections.observableArrayList();
@@ -59,7 +61,7 @@ public class MainApp extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("MatchCV - Analisador de Currículos v1.2");
 
-        try (InputStream iconStream = getClass().getResourceAsStream("/appIcon.png")) {
+        try (InputStream iconStream = getClass().getResourceAsStream("/appIcon.icns")) {
             if (iconStream != null) {
                 primaryStage.getIcons().add(new Image(iconStream));
             }
@@ -91,6 +93,9 @@ public class MainApp extends Application {
         VBox painelDetalhes = criarPainelDetalhes();
         grid.add(painelDetalhes, 2, 0);
 
+        HBox statusBar = criarBarraDeStatus();
+        mainLayout.setBottom(statusBar);
+
         ColumnConstraints col1 = new ColumnConstraints();
         col1.setPercentWidth(25);
         ColumnConstraints col2 = new ColumnConstraints();
@@ -112,15 +117,15 @@ public class MainApp extends Application {
     }
 
     private VBox criarPainelRequisitos() {
-
         VBox content = new VBox(10);
         content.setPadding(new Insets(10));
 
-        TitledPane titledPane = new TitledPane("1. Definir Vaga e Selecionar Arquivos", content);
+        TitledPane titledPane = new TitledPane("Definir Requisitos e Selecionar Arquivos", content);
         titledPane.setCollapsible(false);
 
+        VBox painelRequisitosDefinicao = new VBox(5);
         Label titulo = new Label("Requisitos da Vaga:");
-        titulo.setStyle("-fx-font-weight: bold;");
+        titulo.getStyleClass().add("subtitulo-painel");
 
         tabelaRequisitos = new TableView<>(dadosRequisitos);
         TableColumn<Requisito, String> colReqComp = new TableColumn<>("Competência");
@@ -128,46 +133,60 @@ public class MainApp extends Application {
         TableColumn<Requisito, String> colReqImp = new TableColumn<>("Importância");
         colReqImp.setCellValueFactory(new PropertyValueFactory<>("importancia"));
         tabelaRequisitos.getColumns().addAll(colReqComp, colReqImp);
-        tabelaRequisitos.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tabelaRequisitos.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+        colReqComp.prefWidthProperty().bind(tabelaRequisitos.widthProperty().multiply(0.70));
+        colReqImp.prefWidthProperty().bind(tabelaRequisitos.widthProperty().multiply(0.30));
 
         inputCompetencia = new TextField();
         inputCompetencia.setPromptText("Nome da competência");
         comboImportancia = new ComboBox<>(FXCollections.observableArrayList("Essencial", "Desejável"));
         comboImportancia.setValue("Essencial");
-        Button btnAddReq = new Button("Adicionar");
+
+        btnAddReq = new Button("Adicionar");
+        btnAddReq.getStyleClass().add("btn-com-icone");
+        btnAddReq.setGraphic(criarIcone("/icons/add-icon.png"));
         btnAddReq.setOnAction(e -> adicionarRequisito());
+        btnAddReq.setDisable(true);
+
+        inputCompetencia.textProperty().addListener((observable, oldValue, newValue) -> {
+            btnAddReq.setDisable(newValue.trim().isEmpty());
+        });
+
         HBox addBox = new HBox(5, inputCompetencia, comboImportancia, btnAddReq);
         addBox.setAlignment(Pos.CENTER_LEFT);
 
+        painelRequisitosDefinicao.getChildren().addAll(titulo, tabelaRequisitos, addBox);
+
+        VBox painelSelecaoArquivos = new VBox(5);
         Label selecionarLabel = new Label("Adicionar Currículos à Fila:");
-        Button selecionarArquivosBtn = new Button("Selecionar Arquivos...");
+        selecionarLabel.getStyleClass().add("subtitulo-painel");
+
+        selecionarArquivosBtn = new Button("Selecionar Arquivos...");
+        selecionarArquivosBtn.getStyleClass().add("btn-com-icone");
+        selecionarArquivosBtn.setGraphic(criarIcone("/icons/file-icon.png"));
         selecionarArquivosBtn.setOnAction(e -> selecionarArquivos());
-        Button selecionarPastaBtn = new Button("Selecionar Pasta...");
+
+        selecionarPastaBtn = new Button("Selecionar Pasta...");
+        selecionarPastaBtn.getStyleClass().add("btn-com-icone");
+        selecionarPastaBtn.setGraphic(criarIcone("/icons/folder-icon.png"));
         selecionarPastaBtn.setOnAction(e -> selecionarPasta());
+
         limparFilaBtn = new Button("Limpar Fila");
+        limparFilaBtn.getStyleClass().add("btn-com-icone");
+        limparFilaBtn.setGraphic(criarIcone("/icons/clear-icon.png"));
         limparFilaBtn.setDisable(true);
         limparFilaBtn.setOnAction(e -> limparFila());
+
         HBox botoesSelecao = new HBox(10, selecionarArquivosBtn, selecionarPastaBtn, limparFilaBtn);
 
         analisarBtn = new Button("3. Analisar Currículos");
+        analisarBtn.setId("btn-analisar");
         analisarBtn.setDisable(true);
         analisarBtn.setOnAction(e -> iniciarAnalise());
 
-        progressBar = new ProgressBar(0);
-        progressBar.setMaxWidth(Double.MAX_VALUE);
-        progressoLabel = new Label("Adicione requisitos e selecione arquivos/pastas.");
+        painelSelecaoArquivos.getChildren().addAll(selecionarLabel, botoesSelecao, new Separator(), analisarBtn);
 
-        content.getChildren().addAll(
-                titulo,
-                tabelaRequisitos,
-                addBox,
-                new Separator(),
-                selecionarLabel,
-                botoesSelecao,
-                analisarBtn,
-                progressBar,
-                progressoLabel
-        );
+        content.getChildren().addAll(painelRequisitosDefinicao, new Separator(), painelSelecaoArquivos);
 
         return new VBox(titledPane);
     }
@@ -188,6 +207,7 @@ public class MainApp extends Application {
         colRankPontos.setSortType(TableColumn.SortType.DESCENDING);
         tabelaRanking.getColumns().addAll(colRankNome, colRankPontos);
         tabelaRanking.getSortOrder().add(colRankPontos);
+        tabelaRanking.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
         colRankNome.prefWidthProperty().bind(tabelaRanking.widthProperty().multiply(0.70));
         colRankPontos.prefWidthProperty().bind(tabelaRanking.widthProperty().multiply(0.25));
@@ -223,6 +243,7 @@ public class MainApp extends Application {
         colDetJust.setCellValueFactory(new PropertyValueFactory<>("justificativa"));
 
         tabelaDetalhes.getColumns().addAll(colDetComp, colDetNivel, colDetJust);
+        tabelaDetalhes.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
         colDetComp.prefWidthProperty().bind(tabelaDetalhes.widthProperty().multiply(0.20));
         colDetNivel.prefWidthProperty().bind(tabelaDetalhes.widthProperty().multiply(0.20));
@@ -233,14 +254,44 @@ public class MainApp extends Application {
         return new VBox(titledPane);
     }
 
+    private HBox criarBarraDeStatus() {
+        HBox statusBar = new HBox(10);
+        statusBar.setPadding(new Insets(5, 15, 5, 15));
+        statusBar.setAlignment(Pos.CENTER_LEFT);
+        statusBar.getStyleClass().add("status-bar");
+
+        progressBar = new ProgressBar(0);
+        progressBar.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(progressBar, Priority.ALWAYS);
+
+        progressoLabel = new Label("Adicione requisitos e selecione arquivos/pastas.");
+        progressoLabel.getStyleClass().add("status-label");
+
+        statusBar.getChildren().addAll(progressoLabel, progressBar);
+        return statusBar;
+    }
+
+    private ImageView criarIcone(String path) {
+        try (InputStream iconStream = getClass().getResourceAsStream(path)) {
+            if (iconStream != null) {
+                Image image = new Image(iconStream);
+                ImageView imageView = new ImageView(image);
+                imageView.setFitHeight(16);
+                imageView.setFitWidth(16);
+                return imageView;
+            }
+        } catch (IOException e) {
+            System.err.println("Erro ao carregar o ícone: " + path);
+        }
+        return null;
+    }
+
     private void adicionarRequisito() {
         String competencia = inputCompetencia.getText().trim();
         String importancia = comboImportancia.getValue();
-        if (!competencia.isEmpty()) {
-            dadosRequisitos.add(new Requisito(competencia, importancia));
-            inputCompetencia.clear();
-            verificarSePodeAnalisar();
-        }
+        dadosRequisitos.add(new Requisito(competencia, importancia));
+        inputCompetencia.clear();
+        verificarSePodeAnalisar();
     }
 
     private void selecionarArquivos() {
@@ -312,14 +363,18 @@ public class MainApp extends Application {
 
         analisarBtn.setDisable(true);
         limparFilaBtn.setDisable(true);
+        selecionarArquivosBtn.setDisable(true);
+        selecionarPastaBtn.setDisable(true);
         dadosRanking.clear();
         dadosDetalhes.clear();
 
         AtomicInteger arquivosProcessados = new AtomicInteger(0);
         int totalArquivos = arquivosParaAnalisar.size();
+        progressBar.setProgress(0);
 
         new Thread(() -> {
             for (File arquivo : arquivosParaAnalisar) {
+                Platform.runLater(() -> progressoLabel.setText("Analisando: " + arquivo.getName()));
                 try {
                     String texto = analiseService.extrairTextoDePDF(arquivo);
                     List<String> listaRequisitos = dadosRequisitos.stream()
@@ -350,6 +405,8 @@ public class MainApp extends Application {
                 progressoLabel.setText("Análise concluída! " + totalArquivos + " currículos processados.");
                 analisarBtn.setDisable(false);
                 limparFilaBtn.setDisable(false);
+                selecionarArquivosBtn.setDisable(false);
+                selecionarPastaBtn.setDisable(false);
             });
 
         }).start();
