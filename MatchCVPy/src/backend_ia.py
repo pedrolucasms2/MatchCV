@@ -3,12 +3,13 @@ from flask import Flask, request, jsonify
 import requests
 import spacy
 import time
+from gemini_api_service import analisar_com_gemini 
 
 app = Flask(__name__)
 print("Carregando modelo spaCy base...")
 nlp = spacy.load("pt_core_news_lg")
 
-PROMPT_HIBRIDO_TEMPLATE = """
+PROMPT_HIBRIDO_TEMPLATE_OLLAMA = """
 Você é um Robô Analisador de Currículos. Sua tarefa é analisar o currículo completo para avaliar o nível de proficiência para uma lista específica de competências.
 
 **Contexto:**
@@ -34,27 +35,20 @@ Retorne sua análise SOMENTE no seguinte formato JSON, incluindo TODAS e APENAS 
 }}
 """
 
-
-@app.route('/analisar', methods=['POST'])
-def analisar_curriculo():
+@app.route('/analisar-local', methods=['POST'])
+def analisar_curriculo_local():
     start_time = time.time()
         
-    print("\n--- NOVA REQUISIÇÃO RECEBIDA ---")
-    print("Headers:", request.headers)
-    print("Corpo Bruto:", request.data)
+    print("\n--- NOVA REQUISIÇÃO RECEBIDA (Ollama) ---")
     
     try:
         dados_recebidos = request.json
-        print("JSON parseado com sucesso:", dados_recebidos)
     except Exception as e:
         print("!!! ERRO AO PARSEAR JSON:", e)
         return jsonify({"erro": "O corpo da requisição não é um JSON válido."}), 400
 
     texto_curriculo = dados_recebidos.get('texto_curriculo')
     requisitos = dados_recebidos.get('requisitos', [])
-
-    print(f"Texto extraído: {texto_curriculo[:50]}...")
-    print(f"Requisitos extraídos: {requisitos}")
 
     if not texto_curriculo or not requisitos:
         print("!!! DADOS FALTANDO. Retornando erro.")
@@ -73,7 +67,7 @@ def analisar_curriculo():
 
     lista_competencias_str = ", ".join(competencias_encontradas)
         
-    prompt_com_texto = PROMPT_HIBRIDO_TEMPLATE.replace("{texto_curriculo}", texto_curriculo)
+    prompt_com_texto = PROMPT_HIBRIDO_TEMPLATE_OLLAMA.replace("{texto_curriculo}", texto_curriculo)
     prompt_final = prompt_com_texto.replace("{lista_competencias_encontradas}", lista_competencias_str)
     
     dados_para_ollama = {"model": "phi3:mini", "format": "json", "stream": False, "prompt": prompt_final}
@@ -84,9 +78,9 @@ def analisar_curriculo():
         
         string_json = response.json().get('response', '{}')
         
-        print("\n--- STRING JSON RECEBIDA DO LLM (ANTES DO PARSE) ---")
+        print("\n--- STRING JSON RECEBIDA DO LLM (Ollama) (ANTES DO PARSE) ---")
         print(string_json)
-        print("---------------------------------------------------\n")
+        print("----------------------------------------------------------\n")
 
         resultado_bruto = json.loads(string_json)
         
@@ -99,13 +93,50 @@ def analisar_curriculo():
             resultado_final["avaliacoes"] = avaliacoes_filtradas
         
         end_time = time.time()
-        print(f"Análise dinâmica completa em {end_time - start_time:.2f} segundos.")
+        print(f"Análise local completa em {end_time - start_time:.2f} segundos.")
         
         return jsonify(resultado_final)
         
     except Exception as e:
-        print(f"ERRO durante a chamada ao LLM: {e}")
-        return jsonify({"erro": "Falha ao processar a análise com o LLM."}), 500
+        print(f"ERRO durante a chamada ao Ollama: {e}")
+        return jsonify({"erro": "Falha ao processar a análise com o Ollama."}), 500
+
+@app.route('/analisar-internet', methods=['POST'])
+def analisar_curriculo_internet():
+    start_time = time.time()
+        
+    print("\n--- NOVA REQUISIÇÃO RECEBIDA (Gemini) ---")
+    
+    try:
+        dados_recebidos = request.json
+    except Exception as e:
+        print("!!! ERRO AO PARSEAR JSON:", e)
+        return jsonify({"erro": "O corpo da requisição não é um JSON válido."}), 400
+
+    texto_curriculo = dados_recebidos.get('texto_curriculo')
+    requisitos = dados_recebidos.get('requisitos', [])
+
+    if not texto_curriculo or not requisitos:
+        print("!!! DADOS FALTANDO. Retornando erro.")
+        return jsonify({"erro": "Texto do currículo ou lista de requisitos faltando."}), 400
+
+    matcher = spacy.matcher.PhraseMatcher(nlp.vocab, attr="LOWER")
+    patterns = [nlp.make_doc(text) for text in requisitos]
+    matcher.add("REQUISITOS_VAGA", patterns)
+    
+    doc = nlp(texto_curriculo)
+    matches = matcher(doc)
+    competencias_encontradas = sorted(list({doc[start:end].text.lower() for match_id, start, end in matches}))
+    
+    resultado = analisar_com_gemini(texto_curriculo, competencias_encontradas)
+    
+    if "erro" in resultado:
+        return jsonify(resultado), 500
+    
+    end_time = time.time()
+    print(f"Análise da internet completa em {end_time - start_time:.2f} segundos.")
+    
+    return jsonify(resultado)
 
 if __name__ == '__main__':
     print("Iniciando servidor Flask na porta 5001")

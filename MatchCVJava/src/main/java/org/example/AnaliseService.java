@@ -15,7 +15,8 @@ import java.util.Map;
 
 public class AnaliseService {
 
-    private static final String API_URL = "http://localhost:5001/analisar";
+    private static final String API_URL_LOCAL = "http://localhost:5001/analisar-local";
+    private static final String API_URL_INTERNET = "http://localhost:5001/analisar-internet";
 
     /**
      * Extrai todo o texto de um arquivo PDF.
@@ -39,9 +40,10 @@ public class AnaliseService {
      *
      * @param textoDoCurriculo O texto a ser analisado.
      * @param requisitos A lista de competências a procurar.
+     * @param tipoIA O tipo de IA a ser usado ("IA Local" ou "IA da Internet").
      * @return A resposta JSON do servidor como uma String.
      */
-    public String analisarTextoComIA(String textoDoCurriculo, List<String> requisitos) throws IOException, InterruptedException {
+    public String analisarTextoComIA(String textoDoCurriculo, List<String> requisitos, String tipoIA) throws IOException, InterruptedException {
         System.out.println("Enviando texto e " + requisitos.size() + " requisitos para o backend...");
 
         Map<String, Object> dadosParaEnvio = Map.of(
@@ -56,13 +58,15 @@ public class AnaliseService {
         System.out.println(corpoJson);
         System.out.println("------------------------------------");
 
+        String url = tipoIA.equals("IA Local (Ollama)") ? API_URL_LOCAL : API_URL_INTERNET;
+
         HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
                 .connectTimeout(Duration.ofMinutes(5))
                 .build();
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(API_URL))
+                .uri(URI.create(url))
                 .timeout(Duration.ofMinutes(5))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .POST(HttpRequest.BodyPublishers.ofString(corpoJson))

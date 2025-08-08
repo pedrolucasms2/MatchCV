@@ -49,6 +49,8 @@ public class MainApp extends Application {
     private ComboBox<String> comboImportancia;
     private Button btnAddReq;
 
+    private ComboBox<String> iaChooser;
+
     private TableView<ResultadoCandidato> tabelaRanking;
     private final ObservableList<ResultadoCandidato> dadosRanking = FXCollections.observableArrayList();
 
@@ -151,6 +153,13 @@ public class MainApp extends Application {
 
         painelRequisitosDefinicao.getChildren().addAll(titulo, tabelaRequisitos, addBox);
 
+        HBox iaChooserBox = new HBox(5);
+        Label iaLabel = new Label("Selecione a IA:");
+        iaLabel.getStyleClass().add("subtitulo-painel");
+        iaChooser = new ComboBox<>(FXCollections.observableArrayList("IA Local", "IA Gemini"));
+        iaChooser.setValue("IA Local (Ollama)");
+        iaChooserBox.getChildren().addAll(iaLabel, iaChooser);
+
         VBox painelSelecaoArquivos = new VBox(5);
         Label selecionarLabel = new Label("Adicionar Currículos à Fila:");
         selecionarLabel.getStyleClass().add("subtitulo-painel");
@@ -179,7 +188,7 @@ public class MainApp extends Application {
         analisarBtn.setOnAction(e -> iniciarAnalise());
 
         painelSelecaoArquivos.getChildren().addAll(selecionarLabel, botoesSelecao, new Separator(), analisarBtn);
-        content.getChildren().addAll(painelRequisitosDefinicao, new Separator(), painelSelecaoArquivos);
+        content.getChildren().addAll(iaChooserBox, painelRequisitosDefinicao, new Separator(), painelSelecaoArquivos);
 
         return new VBox(titledPane);
     }
@@ -265,6 +274,8 @@ public class MainApp extends Application {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
         popupStage.setTitle("Avaliação Completa: " + nomeArquivo);
+        popupStage.setMinWidth(600);
+        popupStage.setMinHeight(500);
 
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setFitToWidth(true);
@@ -406,7 +417,10 @@ public class MainApp extends Application {
                             .map(Requisito::getCompetencia)
                             .collect(Collectors.toList());
 
-                    String json = analiseService.analisarTextoComIA(texto, listaRequisitos);
+                    String escolhaIA = iaChooser.getValue();
+
+                    String json = analiseService.analisarTextoComIA(texto, listaRequisitos, escolhaIA);
+
                     ResultadoAnalise resultadoAnalise = gson.fromJson(json, ResultadoAnalise.class);
 
                     ResultadoCandidato resultadoCandidato = new ResultadoCandidato(arquivo);
