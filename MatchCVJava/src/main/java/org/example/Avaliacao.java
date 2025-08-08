@@ -1,7 +1,10 @@
 package org.example;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Avaliacao {
 
+    @SerializedName(value = "competencia", alternate = "competência")
     private String competencia;
     private String nivel_estimado;
     private String justificativa;

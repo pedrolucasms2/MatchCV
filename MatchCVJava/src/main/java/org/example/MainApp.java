@@ -17,6 +17,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +35,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 public class MainApp extends Application {
+
     private Button analisarBtn;
     private Button limparFilaBtn;
     private Button selecionarArquivosBtn;
@@ -49,9 +51,6 @@ public class MainApp extends Application {
 
     private TableView<ResultadoCandidato> tabelaRanking;
     private final ObservableList<ResultadoCandidato> dadosRanking = FXCollections.observableArrayList();
-
-    private TableView<Avaliacao> tabelaDetalhes;
-    private final ObservableList<Avaliacao> dadosDetalhes = FXCollections.observableArrayList();
 
     private final List<File> arquivosParaAnalisar = new ArrayList<>();
     private final AnaliseService analiseService = new AnaliseService();
@@ -74,7 +73,6 @@ public class MainApp extends Application {
 
         Text tituloApp = new Text("MatchCV");
         tituloApp.setId("titulo-app");
-        tituloApp.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         BorderPane.setAlignment(tituloApp, Pos.CENTER);
         mainLayout.setTop(tituloApp);
         BorderPane.setMargin(tituloApp, new Insets(0, 0, 20, 0));
@@ -90,21 +88,17 @@ public class MainApp extends Application {
         VBox painelRanking = criarPainelRanking();
         grid.add(painelRanking, 1, 0);
 
-        VBox painelDetalhes = criarPainelDetalhes();
-        grid.add(painelDetalhes, 2, 0);
+
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setPercentWidth(30);
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setPercentWidth(70);
+        grid.getColumnConstraints().addAll(col1, col2);
 
         HBox statusBar = criarBarraDeStatus();
         mainLayout.setBottom(statusBar);
 
-        ColumnConstraints col1 = new ColumnConstraints();
-        col1.setPercentWidth(25);
-        ColumnConstraints col2 = new ColumnConstraints();
-        col2.setPercentWidth(25);
-        ColumnConstraints col3 = new ColumnConstraints();
-        col3.setPercentWidth(50);
-        grid.getColumnConstraints().addAll(col1, col2, col3);
-
-        Scene scene = new Scene(mainLayout, 1400, 700);
+        Scene scene = new Scene(mainLayout, 1000, 700);
 
         String cssFile = "/styles.css";
         URL cssUrl = getClass().getResource(cssFile);
@@ -120,7 +114,7 @@ public class MainApp extends Application {
         VBox content = new VBox(10);
         content.setPadding(new Insets(10));
 
-        TitledPane titledPane = new TitledPane("Definir Requisitos e Selecionar Arquivos", content);
+        TitledPane titledPane = new TitledPane("1. Definir Vaga e Selecionar Arquivos", content);
         titledPane.setCollapsible(false);
 
         VBox painelRequisitosDefinicao = new VBox(5);
@@ -179,13 +173,12 @@ public class MainApp extends Application {
 
         HBox botoesSelecao = new HBox(10, selecionarArquivosBtn, selecionarPastaBtn, limparFilaBtn);
 
-        analisarBtn = new Button("3. Analisar Currículos");
+        analisarBtn = new Button("2. Analisar Currículos");
         analisarBtn.setId("btn-analisar");
         analisarBtn.setDisable(true);
         analisarBtn.setOnAction(e -> iniciarAnalise());
 
         painelSelecaoArquivos.getChildren().addAll(selecionarLabel, botoesSelecao, new Separator(), analisarBtn);
-
         content.getChildren().addAll(painelRequisitosDefinicao, new Separator(), painelSelecaoArquivos);
 
         return new VBox(titledPane);
@@ -212,47 +205,22 @@ public class MainApp extends Application {
         colRankNome.prefWidthProperty().bind(tabelaRanking.widthProperty().multiply(0.70));
         colRankPontos.prefWidthProperty().bind(tabelaRanking.widthProperty().multiply(0.25));
 
-        tabelaRanking.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldSelection, newSelection) -> {
-                    if (newSelection != null && newSelection.getAvaliacoesDetalhadas() != null) {
-                        dadosDetalhes.setAll(newSelection.getAvaliacoesDetalhadas());
-                    } else {
-                        dadosDetalhes.clear();
-                    }
+        tabelaRanking.setRowFactory(tv -> {
+            TableRow<ResultadoCandidato> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    ResultadoCandidato candidato = row.getItem();
+                    exibirAvaliacoesCompletas(candidato.getNomeArquivo(), candidato.getAvaliacoesDetalhadas());
                 }
-        );
+            });
+            return row;
+        });
 
         content.getChildren().add(tabelaRanking);
 
         return new VBox(titledPane);
     }
 
-    private VBox criarPainelDetalhes() {
-        VBox content = new VBox(10);
-        content.setPadding(new Insets(10));
-
-        TitledPane titledPane = new TitledPane("Detalhes da Análise do Candidato Selecionado", content);
-        titledPane.setCollapsible(false);
-
-        tabelaDetalhes = new TableView<>(dadosDetalhes);
-        TableColumn<Avaliacao, String> colDetComp = new TableColumn<>("Competência");
-        colDetComp.setCellValueFactory(new PropertyValueFactory<>("competencia"));
-        TableColumn<Avaliacao, String> colDetNivel = new TableColumn<>("Nível Estimado");
-        colDetNivel.setCellValueFactory(new PropertyValueFactory<>("nivel_estimado"));
-        TableColumn<Avaliacao, String> colDetJust = new TableColumn<>("Justificativa");
-        colDetJust.setCellValueFactory(new PropertyValueFactory<>("justificativa"));
-
-        tabelaDetalhes.getColumns().addAll(colDetComp, colDetNivel, colDetJust);
-        tabelaDetalhes.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-
-        colDetComp.prefWidthProperty().bind(tabelaDetalhes.widthProperty().multiply(0.20));
-        colDetNivel.prefWidthProperty().bind(tabelaDetalhes.widthProperty().multiply(0.20));
-        colDetJust.prefWidthProperty().bind(tabelaDetalhes.widthProperty().multiply(0.55));
-
-        content.getChildren().add(tabelaDetalhes);
-
-        return new VBox(titledPane);
-    }
 
     private HBox criarBarraDeStatus() {
         HBox statusBar = new HBox(10);
@@ -286,12 +254,72 @@ public class MainApp extends Application {
         return null;
     }
 
+    private void exibirAvaliacoesCompletas(String nomeArquivo, List<Avaliacao> avaliacoes) {
+        if (avaliacoes == null || avaliacoes.isEmpty()) {
+            new Alert(Alert.AlertType.INFORMATION, "Nenhuma avaliação detalhada disponível para este currículo.").show();
+            return;
+        }
+
+        System.out.println("DEBUG: Exibindo " + avaliacoes.size() + " avaliações para o arquivo: " + nomeArquivo);
+
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle("Avaliação Completa: " + nomeArquivo);
+        popupStage.setMinWidth(600);
+        popupStage.setMinHeight(500);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setFitToWidth(true);
+        scrollPane.getStyleClass().add("scroll-pane-popup");
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(15));
+        content.getStyleClass().add("vbox-popup");
+
+        for (Avaliacao avaliacao : avaliacoes) {
+            VBox avaliacaoItem = new VBox(5);
+            avaliacaoItem.getStyleClass().add("avaliacao-item");
+            avaliacaoItem.setPadding(new Insets(10));
+
+            Label competenciaLabel = new Label("Competência: " + avaliacao.getCompetencia());
+            competenciaLabel.getStyleClass().add("competencia-label");
+
+            Label nivelLabel = new Label("Nível Estimado: " + avaliacao.getNivel_estimado());
+            nivelLabel.getStyleClass().add("nivel-label");
+
+            Label justificativaLabel = new Label("Justificativa:");
+            justificativaLabel.getStyleClass().add("justificativa-label");
+
+            TextArea textAreaJustificativa = new TextArea(avaliacao.getJustificativa());
+            textAreaJustificativa.setEditable(false);
+            textAreaJustificativa.setWrapText(true);
+            textAreaJustificativa.setPrefHeight(100);
+            textAreaJustificativa.getStyleClass().add("justificativa-textarea");
+
+            avaliacaoItem.getChildren().addAll(competenciaLabel, nivelLabel, justificativaLabel, textAreaJustificativa);
+            content.getChildren().add(avaliacaoItem);
+        }
+
+        scrollPane.setContent(content);
+
+        Scene scene = new Scene(scrollPane);
+        URL cssUrl = getClass().getResource("/styles.css");
+        if (cssUrl != null) {
+            scene.getStylesheets().add(cssUrl.toExternalForm());
+        }
+
+        popupStage.setScene(scene);
+        popupStage.showAndWait();
+    }
+
     private void adicionarRequisito() {
         String competencia = inputCompetencia.getText().trim();
         String importancia = comboImportancia.getValue();
-        dadosRequisitos.add(new Requisito(competencia, importancia));
-        inputCompetencia.clear();
-        verificarSePodeAnalisar();
+        if (!competencia.isEmpty()) {
+            dadosRequisitos.add(new Requisito(competencia, importancia));
+            inputCompetencia.clear();
+            verificarSePodeAnalisar();
+        }
     }
 
     private void selecionarArquivos() {
@@ -366,7 +394,6 @@ public class MainApp extends Application {
         selecionarArquivosBtn.setDisable(true);
         selecionarPastaBtn.setDisable(true);
         dadosRanking.clear();
-        dadosDetalhes.clear();
 
         AtomicInteger arquivosProcessados = new AtomicInteger(0);
         int totalArquivos = arquivosParaAnalisar.size();
@@ -382,7 +409,6 @@ public class MainApp extends Application {
                             .collect(Collectors.toList());
 
                     String json = analiseService.analisarTextoComIA(texto, listaRequisitos);
-                    System.out.println("JSON recebido do backend: " + json);
                     ResultadoAnalise resultadoAnalise = gson.fromJson(json, ResultadoAnalise.class);
 
                     ResultadoCandidato resultadoCandidato = new ResultadoCandidato(arquivo);
@@ -425,7 +451,6 @@ public class MainApp extends Application {
                 ));
 
         if (avaliacoes == null || avaliacoes.isEmpty()) {
-            System.err.println("Aviso: A lista de avaliações retornada pela IA está vazia.");
             return 0;
         }
 
@@ -433,7 +458,6 @@ public class MainApp extends Application {
 
         for (Avaliacao aval : avaliacoes) {
             if (aval == null || aval.getCompetencia() == null) {
-                System.err.println("Ignorando uma avaliação nula ou inválida.");
                 continue;
             }
 
