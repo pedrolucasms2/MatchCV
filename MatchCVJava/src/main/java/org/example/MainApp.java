@@ -1,6 +1,8 @@
 package org.example;
 
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -51,7 +53,7 @@ public class MainApp extends Application {
 
     private final List<File> arquivosParaAnalisar = new ArrayList<>();
     private final AnaliseService analiseService = new AnaliseService();
-    private final Gson gson = new Gson();
+    private final Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
 
     @Override
     public void start(Stage primaryStage) {
@@ -262,7 +264,7 @@ public class MainApp extends Application {
         File pasta = directoryChooser.showDialog(null);
         if (pasta != null) {
             File[] arquivosDaPasta = pasta.listFiles((dir, name) -> name.toLowerCase().endsWith(".pdf"));
-            if (arquivosDaPasta != null && arquivosDaPasta.length > 0) {
+            if (arquivosDaPasta != null) {
                 for (File arquivo : arquivosDaPasta) {
                     if (!this.arquivosParaAnalisar.contains(arquivo)) {
                         this.arquivosParaAnalisar.add(arquivo);
@@ -325,7 +327,15 @@ public class MainApp extends Application {
                             .collect(Collectors.toList());
 
                     String json = analiseService.analisarTextoComIA(texto, listaRequisitos);
-                    ResultadoAnalise resultado = gson.fromJson(json, ResultadoAnalise.class);
+                    System.out.println("JSON recebido do backend: " + json);
+                    ResultadoAnalise resultadoAnalise = gson.fromJson(json, ResultadoAnalise.class);
+
+                    ResultadoCandidato resultadoCandidato = new ResultadoCandidato(arquivo);
+                    resultadoCandidato.setAvaliacoesDetalhadas(resultadoAnalise.getAvaliacoes());
+                    int pontuacao = calcularPontuacao(resultadoCandidato.getAvaliacoesDetalhadas());
+                    resultadoCandidato.setPontuacao(pontuacao);
+
+                    Platform.runLater(() -> dadosRanking.add(resultadoCandidato));
 
                 } catch (Exception e) {
                     System.err.println("Erro ao analisar o arquivo \"" + arquivo.getName() + "\": " + e.getMessage());
@@ -337,7 +347,6 @@ public class MainApp extends Application {
 
             Platform.runLater(() -> {
                 Collections.sort(dadosRanking);
-                tabelaRanking.setItems(FXCollections.observableArrayList(dadosRanking));
                 progressoLabel.setText("Análise concluída! " + totalArquivos + " currículos processados.");
                 analisarBtn.setDisable(false);
                 limparFilaBtn.setDisable(false);

@@ -6,6 +6,6 @@ module org.example.matchcvjava {
     requires java.net.http;
     requires javafx.graphics;
 
-    opens org.example to javafx.fxml;
+    opens org.example to javafx.base, javafx.fxml, com.google.gson;
     exports org.example to javafx.graphics;
 }

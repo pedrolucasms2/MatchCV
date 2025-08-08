@@ -6,6 +6,9 @@ public class Avaliacao {
     private String nivel_estimado;
     private String justificativa;
 
+    public Avaliacao() {
+    }
+
     public String getCompetencia() {
         return competencia;
     }
